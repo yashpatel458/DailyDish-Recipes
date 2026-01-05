@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DailyDish - What to Eat Today</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: #fafaf8;
+            color: #1a1a1a;
+            line-height: 1.6;
+            position: relative;
+        }
+
+        :root {
+            --color-primary: #2d8281;
+            --color-primary-hover: #1f5d5b;
+            --color-secondary: #f5f1e8;
+            --color-text: #1a1a1a;
+            --color-text-light: #666;
+            --color-border: #e0d5c8;
+            --color-chip-bg: #e8f0f5;
+            --color-bg: #fafaf8;
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.12);
+            --radius: 12px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 16px;
+            width: 100%;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding: 20px 0;
+        }
+
+        h1 {
+            font-size: clamp(24px, 8vw, 42px);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .tagline {
+            color: var(--color-text-light);
+            font-size: clamp(13px, 4vw, 16px);
+        }
+
+        .mode-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 24px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .mode-card {
+            background: white;
+            border: 2px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: clamp(16px, 4vw, 32px);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            position: relative;
+        }
+
+        .mode-card:hover {
+            border-color: var(--color-primary);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .mode-card.active {
+            border-color: var(--color-primary);
+            background: rgba(45, 130, 129, 0.05);
+        }
+
+        .mode-icon {
+            font-size: clamp(32px, 10vw, 48px);
+            margin-bottom: 8px;
+        }
+
+        .mode-card h3 {
+            font-size: clamp(14px, 4vw, 18px);
+            margin-bottom: 8px;
+        }
+
+        .mode-card p {
+            font-size: clamp(12px, 3vw, 14px);
+            color: var(--color-text-light);
+        }
+
+        .content {
+            display: none;
+        }
+
+        .content.active {
+            display: block;
+        }
+
+        .ingredient-section {
+            background: white;
+            border-radius: var(--radius);
+            padding: clamp(16px, 4vw, 32px);
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .ingredient-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .ingredient-input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .ingredient-input-group input:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(45, 130, 129, 0.1);
+        }
+
+        .btn {
+            padding: 12px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .btn-primary {
+            background: var(--color-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--color-primary-hover);
+        }
+
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+
+        .btn-sm {
+            padding: 8px 12px;
+            font-size: 13px;
+            width: 100%;
+        }
+
+        .chips-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .chip {
+            background: var(--color-chip-bg);
+            border: 1px solid var(--color-primary);
+            color: var(--color-primary);
+            padding: 8px 12px;
+            border-radius: 24px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            flex-shrink: 0;
+        }
+
+        .chip-remove {
+            cursor: pointer;
+            font-weight: bold;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+        }
+
+        .chip-remove:hover {
+            opacity: 1;
+        }
+
+        .search-section {
+            background: white;
+            border-radius: var(--radius);
+            padding: clamp(16px, 4vw, 32px);
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .search-group {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--color-text);
+        }
+
+        input[type="text"],
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        input[type="text"]:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(45, 130, 129, 0.1);
+        }
+
+        select {
+            cursor: pointer;
+        }
+
+        .recipes-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+            width: 100%;
+        }
+
+        @media (min-width: 480px) {
+            .recipes-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 768px) {
+            .recipes-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .recipes-grid {
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                gap: 24px;
+            }
+        }
+
+        .recipe-card {
+            background: white;
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .recipe-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-4px);
+        }
+
+        .recipe-card-image {
+            width: 100%;
+            height: 140px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .recipe-card-content {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .recipe-card h3 {
+            font-size: 14px;
+            margin-bottom: 8px;
+            line-height: 1.4;
+            flex-grow: 1;
+        }
+
+        .recipe-meta {
+            display: flex;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--color-text-light);
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .recipe-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .recipe-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .recipe-buttons button {
+            flex: 1;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: var(--radius);
+            padding: 20px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            gap: 12px;
+        }
+
+        .modal-header h2 {
+            font-size: 18px;
+            margin: 0;
+            flex-grow: 1;
+            word-break: break-word;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--color-text-light);
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .modal-close:hover {
+            color: var(--color-text);
+        }
+
+        .ingredient-checklist {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .ingredient-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: var(--color-bg);
+            border-radius: 8px;
+            border: 1px solid var(--color-border);
+            gap: 10px;
+        }
+
+        .ingredient-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .ingredient-item label {
+            flex: 1;
+            cursor: pointer;
+            margin: 0;
+            font-size: 14px;
+            word-break: break-word;
+        }
+
+        .ingredient-item input[type="checkbox"]:checked + label {
+            color: var(--color-text-light);
+            text-decoration: line-through;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 32px 16px;
+            color: var(--color-text-light);
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .empty-state h3 {
+            font-size: 16px;
+            margin-bottom: 8px;
+            color: var(--color-text);
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 12px;
+            }
+
+            header {
+                margin-bottom: 20px;
+                padding: 16px 0;
+            }
+
+            .mode-selector {
+                gap: 10px;
+                margin-bottom: 20px;
+            }
+
+            .ingredient-section {
+                margin-bottom: 16px;
+            }
+
+            .ingredient-section h2 {
+                font-size: 16px !important;
+            }
+
+            .search-section h2 {
+                font-size: 16px !important;
+            }
+
+            .btn {
+                padding: 10px 12px;
+                font-size: 13px;
+            }
+
+            .modal-content {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🍽️ DailyDish</h1>
+            <p class="tagline">Solve your "What do I eat?" problem in seconds</p>
+        </header>
+
+        <div id="modeSelector" class="mode-selector">
+            <div class="mode-card active" data-mode="fridge">
+                <div class="mode-icon">🧊</div>
+                <h3>Fridge Raid</h3>
+                <p>I have ingredients</p>
+            </div>
+            <div class="mode-card" data-mode="plan">
+                <div class="mode-icon">🛒</div>
+                <h3>Plan a Meal</h3>
+                <p>I need ingredients</p>
+            </div>
+        </div>
+
+        <div id="fridgeContent" class="content active">
+            <div class="ingredient-section">
+                <h2 style="margin-bottom: 16px; font-size: 20px;">What ingredients do you have?</h2>
+                
+                <div class="ingredient-input-group">
+                    <input id="ingredientInput" type="text" placeholder="e.g., Tomato, Egg, Cheese...">
+                    <button class="btn btn-primary" onclick="addIngredient()">Add</button>
+                </div>
+
+                <div id="ingredientChips" class="chips-container"></div>
+
+                <button class="btn btn-primary" onclick="findRecipesByIngredients()">
+                    Find Recipes
+                </button>
+            </div>
+
+            <div id="recipesContainer" class="recipes-grid"></div>
+            <div id="emptyRecipes" class="empty-state" style="display: none;">
+                <div class="empty-state-icon">🔍</div>
+                <h3>No recipes found</h3>
+                <p>Try adding different ingredients</p>
+            </div>
+        </div>
+
+        <div id="planContent" class="content">
+            <div class="search-section">
+                <h2 style="margin-bottom: 16px; font-size: 20px;">What do you want to cook?</h2>
+                
+                <div class="search-group">
+                    <div class="form-group">
+                        <label for="recipeSearch">Search by Recipe Name</label>
+                        <input id="recipeSearch" type="text" placeholder="e.g., Pasta, Soup..." oninput="filterBySearch()">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="moodFilter">Or filter by Mood</label>
+                        <select id="moodFilter" onchange="filterByMood()">
+                            <option value="">All Recipes</option>
+                            <option value="quick">Quick (under 30min)</option>
+                            <option value="comfort">Comfort Food</option>
+                            <option value="healthy">Healthy</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div id="planRecipesContainer" class="recipes-grid"></div>
+            <div id="emptyPlanRecipes" class="empty-state" style="display: none;">
+                <div class="empty-state-icon">🍲</div>
+                <h3>No recipes match your search</h3>
+                <p>Try different keywords or moods</p>
+            </div>
+        </div>
+
+        <div id="shoppingModal" class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="modalTitle"></h2>
+                    <button class="modal-close" onclick="closeShoppingModal()">✕</button>
+                </div>
+                <div id="modalIngredientChecklistContainer" class="ingredient-checklist"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const recipes = [
+    {
+        id: 1,
+        title: "Paratha Burger Tikki",
+        ingredients: ["Onion", "Capsicum", "Tomato", "Mayo", "Ketchup", "Cheese", "Deep Paratha", "Deep Tikki"],
+        prepTime: "25 mins",
+        mood: "quick",
+        emoji: "🥶"
+    },
+    {
+        id: 2,
+        title: "Khichadi",
+        ingredients: ["Rice", "Tuver Daal", "Onion", "Tomato"],
+        prepTime: "25 mins",
+        mood: "comfort",
+        emoji: "☮️"
+    },
+    {
+        id: 3,
+        title: "Sev Usal",
+        ingredients: ["Bun", "Green Onions", "Sev", "Onion", "Tomato", "Peas"],
+        prepTime: "50 mins",
+        mood: "comfort",
+        emoji: "❤️"
+    },
+    {
+        id: 4,
+        title: "Pasta",
+        ingredients: ["Pasta Sauce", "Pasta", "Olive Oil", "Chili Flakes"],
+        prepTime: "22 mins",
+        mood: "quick",
+        emoji: "🍝"
+    },
+    {
+        id: 5,
+        title: "Vegetable Stir Fry",
+        ingredients: ["Broccoli", "Carrot", "Bell Pepper", "Soy Sauce", "Garlic"],
+        prepTime: "15 mins",
+        mood: "healthy",
+        emoji: "🥘"
+    },
+    {
+        id: 6,
+        title: "Grilled Salad",
+        ingredients: ["Lettuce", "Tomato", "Cucumber", "Olive Oil"],
+        prepTime: "30 mins",
+        mood: "healthy",
+        emoji: "🥗"
+    },
+    {
+        id: 7,
+        title: "Tomato Basil Pasta",
+        ingredients: ["Pasta", "Tomato", "Basil", "Garlic", "Olive Oil"],
+        prepTime: "25 mins",
+        mood: "comfort",
+        emoji: "🍝"
+    },
+    {
+        id: 8,
+        title: "Cheese Omelette",
+        ingredients: ["Egg", "Cheese", "Butter", "Salt", "Pepper"],
+        prepTime: "10 mins",
+        mood: "quick",
+        emoji: "🥚"
+    },
+    {
+        id: 9,
+        title: "Paneer Bhurji",
+        ingredients: ["Paneer", "Onion", "Tomato", "Green Chili", "Coriander", "Roti"],
+        prepTime: "20 mins",
+        mood: "savory",
+        emoji: "🧀"
+    },
+    {
+        id: 10,
+        title: "Vada Pav (Hack)",
+        ingredients: ["Frozen Vada", "Pav", "Dry Garlic Chutney", "Green Chutney", "Green Chili"],
+        prepTime: "15 mins",
+        mood: "street",
+        emoji: "🚇"
+    },
+    {
+        id: 11,
+        title: "Batata Poha",
+        ingredients: ["Thick Poha", "Potato", "Onion", "Peanuts", "Lemon", "Green Chili"],
+        prepTime: "20 mins",
+        mood: "light",
+        emoji: "🌤️"
+    },
+    {
+        id: 12,
+        title: "Desi Masala Pasta",
+        ingredients: ["Macaroni", "Onion", "Capsicum", "Ketchup", "Cheese", "Maggi Masala Magic"],
+        prepTime: "30 mins",
+        mood: "fusion",
+        emoji: "🍝"
+    },
+    {
+        id: 13,
+        title: "Chana Masala (Quick)",
+        ingredients: ["Canned Chickpeas", "Onion", "Tomato", "Ginger Garlic Paste", "Coriander", "Frozen Naan"],
+        prepTime: "40 mins",
+        mood: "hearty",
+        emoji: "🍛"
+    },
+    {
+        id: 14,
+        title: "Bombay Sandwich",
+        ingredients: ["Bread", "Boiled Potato", "Cucumber", "Tomato", "Green Chutney", "Butter", "Sev"],
+        prepTime: "25 mins",
+        mood: "refreshing",
+        emoji: "🥪"
+    }
+];
+
+        let selectedIngredients = [];
+        let currentMode = "fridge";
+
+        document.querySelectorAll('.mode-card').forEach(card => {
+            card.addEventListener('click', () => {
+                document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
+                card.classList.add('active');
+                currentMode = card.dataset.mode;
+                switchMode();
+            });
+        });
+
+        function switchMode() {
+            document.querySelectorAll('.mode-card').forEach(card => {
+                card.classList.remove('active');
+                if (card.dataset.mode === currentMode) {
+                    card.classList.add('active');
+                }
+            });
+
+            document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+            if (currentMode === 'fridge') {
+                document.getElementById('fridgeContent').classList.add('active');
+            } else {
+                document.getElementById('planContent').classList.add('active');
+                displayAllRecipes('plan');
+            }
+        }
+
+        function addIngredient() {
+            const input = document.getElementById('ingredientInput');
+            const ingredient = input.value.trim();
+            
+            if (!ingredient) return;
+            if (selectedIngredients.includes(ingredient)) {
+                input.value = '';
+                return;
+            }
+            
+            selectedIngredients.push(ingredient);
+            input.value = '';
+            renderChips();
+        }
+
+        function removeIngredient(ingredient) {
+            selectedIngredients = selectedIngredients.filter(i => i !== ingredient);
+            renderChips();
+        }
+
+        function renderChips() {
+            const container = document.getElementById('ingredientChips');
+            container.innerHTML = selectedIngredients.map(ingredient => 
+                `<div class="chip">${ingredient}<span class="chip-remove" onclick="removeIngredient('${ingredient}')">×</span></div>`
+            ).join('');
+        }
+
+        function findRecipesByIngredients() {
+            if (selectedIngredients.length === 0) {
+                alert('Please add at least one ingredient');
+                return;
+            }
+
+            const filtered = recipes.filter(recipe => {
+                return selectedIngredients.some(selected => 
+                    recipe.ingredients.some(ingredient =>
+                        ingredient.toLowerCase().includes(selected.toLowerCase()) ||
+                        selected.toLowerCase().includes(ingredient.toLowerCase())
+                    )
+                );
+            });
+
+            displayRecipes(filtered, 'fridge');
+        }
+
+        function filterBySearch() {
+            const query = document.getElementById('recipeSearch').value.toLowerCase();
+            const mood = document.getElementById('moodFilter').value;
+            
+            let filtered = recipes;
+            if (query) filtered = filtered.filter(r => r.title.toLowerCase().includes(query));
+            if (mood) filtered = filtered.filter(r => r.mood === mood);
+            
+            displayRecipes(filtered, 'plan');
+        }
+
+        function filterByMood() {
+            const query = document.getElementById('recipeSearch').value.toLowerCase();
+            const mood = document.getElementById('moodFilter').value;
+            
+            let filtered = recipes;
+            if (query) filtered = filtered.filter(r => r.title.toLowerCase().includes(query));
+            if (mood) filtered = filtered.filter(r => r.mood === mood);
+            
+            displayRecipes(filtered, 'plan');
+        }
+
+        function displayAllRecipes(mode) {
+            displayRecipes(recipes, mode);
+        }
+
+        function displayRecipes(recipeList, mode) {
+            const container = mode === 'fridge' 
+                ? document.getElementById('recipesContainer') 
+                : document.getElementById('planRecipesContainer');
+            const emptyState = mode === 'fridge'
+                ? document.getElementById('emptyRecipes')
+                : document.getElementById('emptyPlanRecipes');
+
+            if (recipeList.length === 0) {
+                container.innerHTML = '';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            container.innerHTML = recipeList.map(recipe => `
+                <div class="recipe-card">
+                    <div class="recipe-card-image">${recipe.emoji}</div>
+                    <div class="recipe-card-content">
+                        <h3>${recipe.title}</h3>
+                        <div class="recipe-meta">
+                            <div class="recipe-meta-item">⏱️ ${recipe.prepTime}</div>
+                            <div class="recipe-meta-item">🏷️ ${recipe.mood}</div>
+                        </div>
+                        <div class="recipe-buttons">
+                            <button class="btn btn-primary btn-sm" onclick="showShoppingList(${recipe.id})">
+                                🛒 Shop
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function showShoppingList(recipeId) {
+            const recipe = recipes.find(r => r.id === recipeId);
+            
+            const container = document.getElementById('modalIngredientChecklistContainer');
+            container.innerHTML = recipe.ingredients.map((ing, idx) => `
+                <div class="ingredient-item">
+                    <input type="checkbox" id="ing-${idx}">
+                    <label for="ing-${idx}">${ing}</label>
+                </div>
+            `).join('');
+            
+            document.getElementById('modalTitle').textContent = `🛒 ${recipe.title}`;
+            document.getElementById('shoppingModal').classList.add('active');
+        }
+
+        function closeShoppingModal() {
+            document.getElementById('shoppingModal').classList.remove('active');
+        }
+
+        document.getElementById('shoppingModal').addEventListener('click', (e) => {
+            if (e.target.id === 'shoppingModal') {
+                closeShoppingModal();
+            }
+        });
+
+        document.getElementById('ingredientInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                addIngredient();
+            }
+        });
+    </script>
+</body>
+</html>
